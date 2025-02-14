@@ -2,3 +2,14 @@
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
+@import '~bootstrap/dist/css/bootstrap.min.css';
+
+body {
+  background-image: url('assets/images/background.jpg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  height: 100vh;
+  margin: 0;
+  overflow: hidden;
+}
