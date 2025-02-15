@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ApiService } from 'src/app/core/services/api.service';
 import { Item } from 'src/app/shared/models/item';
 import * as bootstrap from 'bootstrap';
 import { ItemView } from 'src/app/shared/utils/enums/ItemView';
+import { ItemUpsertComponent } from '../item-upsert/item-upsert.component';
 
 @Component({
   selector: 'app-item-list',
@@ -15,6 +16,7 @@ export class ItemListComponent implements OnInit {
   viewMode: ItemView = ItemView.Add;
   selectedItem: Item = { id: 0, title: '', body: '' };
 
+  @ViewChild(ItemUpsertComponent) itemUpsertComponent: ItemUpsertComponent | undefined;
   constructor(private apiService: ApiService) {}
 
   ngOnInit(): void {
@@ -98,7 +100,6 @@ export class ItemListComponent implements OnInit {
   }
 
   cancel(modalId: string): void {
-    this.selectedItem = { id: 0, title: '', body: '' };
     this.hideModal(modalId);
   }
 
@@ -112,33 +113,23 @@ export class ItemListComponent implements OnInit {
     }
   }
 
-  // private hideModal(modalId: string): void {
-  //   const modalElement = document.getElementById(modalId);
-  //   if (modalElement) {
-  //     const modal = new bootstrap.Modal(modalElement);
-  //     console.log('Hide modal', modal);
-
-  //     modal.hide(); // This should close the modal directly
-  //   } else {
-  //     console.error('Modal element not found:', modalId);
-  //   }
-  // }
-
-    private hideModal(modalId: string): void {
-      const modalElement = document.getElementById(modalId);
-      if (modalElement) {
-        const modal = bootstrap.Modal.getInstance(modalElement);
-        if (modal) {
-          console.log('Existing modal instance:', modal);
-          modal.hide();  // Hide the modal
-        } else {
-          console.log('No modal instance found, creating a new one');
-          const newModal = new bootstrap.Modal(modalElement);
-          newModal.hide();
-        }
+  private hideModal(modalId: string): void {
+    const modalElement = document.getElementById(modalId);
+    if (modalElement) {
+      const modal = bootstrap.Modal.getInstance(modalElement);
+      if (modal) {
+        console.log('Existing modal instance:', modal);
+        modal.hide();  // Hide the modal
       } else {
-        console.error('Modal element not found:', modalId);
+        console.log('No modal instance found, creating a new one');
+        const newModal = new bootstrap.Modal(modalElement);
+        newModal.hide();
       }
+      this.selectedItem = { id: 0, title: '', body: '' };
+      this.itemUpsertComponent?.itemForm.reset();
+    } else {
+      console.error('Modal element not found:', modalId);
     }
+  }
 
 }

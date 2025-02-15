@@ -56,7 +56,6 @@ export class ItemUpsertComponent implements OnInit {
   onSubmit(): void {
     if (this.itemForm.valid) {
       this.itemSaved.emit(this.itemForm.value);
-      this.onCancel.emit();
     } else {
       alert('Please fill in both Title and Description correctly.');
     }
