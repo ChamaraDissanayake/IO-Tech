@@ -1,10 +1,21 @@
 <div class="container mt-4">
   <h2 class="mb-4 text-center">Items List</h2>
 
-  <div class="text-end mb-4">
-    <button class="btn btn-primary" (click)="addItem()">Add Item</button>
+  <div class="flex justify-between items-center mb-4">
+    <!-- Search Input -->
+    <input
+      type="text"
+      class="form-control w-3/4 p-2 border border-gray-300 rounded-lg"
+      placeholder="Search items..."
+      [(ngModel)]="searchQuery"
+      (input)="applySearch()"
+    />
+
+    <!-- Add Item Button -->
+    <button class="btn btn-primary w-1/4 ml-4 btn-add" (click)="addItem()">Add Item</button>
   </div>
 
+  <!-- Table -->
   <table class="table table-striped table-bordered">
     <thead>
       <tr>
@@ -15,7 +26,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let item of items | paginate: { itemsPerPage: 5, currentPage: currentPage }; let i = index">
+      <tr *ngFor="let item of filteredItems | paginate: { itemsPerPage: 5, currentPage: currentPage }; let i = index">
         <td>{{ (currentPage - 1) * 5 + i + 1 }}</td>
         <td>{{ item.title | capitalize }}</td>
         <td>{{ item.body | capitalize }}</td>
@@ -30,6 +41,7 @@
     </tbody>
   </table>
 
+  <!-- Pagination -->
   <pagination-controls
     (pageChange)="currentPage = $event"
     previousLabel="Prev"

@@ -12,9 +12,11 @@ import { ItemUpsertComponent } from '../item-upsert/item-upsert.component';
 })
 export class ItemListComponent implements OnInit {
   items: Item[] = [];
+  filteredItems: Item[] = [];
   currentPage: number = 1;
   viewMode: ItemView = ItemView.Add;
   selectedItem: Item = { id: 0, title: '', body: '' };
+  searchQuery: string = '';
 
   @ViewChild(ItemUpsertComponent) itemUpsertComponent: ItemUpsertComponent | undefined;
   constructor(private apiService: ApiService) {}
@@ -27,11 +29,24 @@ export class ItemListComponent implements OnInit {
     this.apiService.getItems().subscribe({
       next: (data: Item[]) => {
         this.items = data;
+        this.filteredItems = data; // Initialize filteredItems with all items
       },
       error: (error) => {
         console.error('Error fetching items:', error);
       },
     });
+  }
+
+  applySearch(): void {
+    if (this.searchQuery) {
+      this.filteredItems = this.items.filter(item =>
+        item.title.includes(this.searchQuery) ||
+        item.body.includes(this.searchQuery)
+      );
+    } else {
+      this.filteredItems = this.items;
+    }
+    this.currentPage = 1; // Reset to the first page after search
   }
 
   addItem(): void {
@@ -61,6 +76,7 @@ export class ItemListComponent implements OnInit {
     this.apiService.deleteItem(this.selectedItem.id).subscribe({
       next: () => {
         this.items = this.items.filter((item) => item.id !== this.selectedItem.id);
+        this.filteredItems = this.filteredItems.filter((item) => item.id !== this.selectedItem.id);
         this.selectedItem = { id: 0, title: '', body: '' };
         console.log('Item deleted successfully');
         this.hideModal('deleteConfirmationModal');
@@ -73,10 +89,12 @@ export class ItemListComponent implements OnInit {
 
   saveItem(item: { id: number; title: string; body: string }): void {
     if (this.viewMode === ItemView.Add) {
-      this.apiService.addItem(item).subscribe({
-        next: (newItem: Item) => {
-          this.items.push(newItem);
-          console.log('Item added successfully');
+      const newItem = { ...item, userId: 1 };
+      this.apiService.addItem(newItem).subscribe({
+        next: (createdItem: Item) => {
+          this.items = [createdItem, ...this.items];
+          this.filteredItems = [createdItem, ...this.filteredItems];
+          console.log('Item added successfully:', createdItem);
           this.hideModal('itemUpsertModal');
         },
         error: (error) => {
@@ -85,15 +103,24 @@ export class ItemListComponent implements OnInit {
       });
     } else if (this.viewMode === ItemView.Edit) {
       const updatedItem = { ...this.selectedItem, ...item };
+      const index = this.items.findIndex((i) => i.id === updatedItem.id);
+
+      if (index !== -1) {
+        this.items[index] = updatedItem;
+        this.filteredItems = this.items.filter(i =>
+          i.title.includes(this.searchQuery) ||
+          i.body.includes(this.searchQuery)
+        );
+      }
+
       this.apiService.updateItem(updatedItem).subscribe({
         next: () => {
-          const index = this.items.findIndex((i) => i.id === updatedItem.id);
-          if (index !== -1) this.items[index] = updatedItem;
-          console.log('Item updated successfully');
+          console.log('Item updated successfully:', updatedItem);
           this.hideModal('itemUpsertModal');
         },
         error: (error) => {
           console.error('Error updating item:', error);
+          this.hideModal('itemUpsertModal');
         },
       });
     }
@@ -118,10 +145,8 @@ export class ItemListComponent implements OnInit {
     if (modalElement) {
       const modal = bootstrap.Modal.getInstance(modalElement);
       if (modal) {
-        console.log('Existing modal instance:', modal);
-        modal.hide();  // Hide the modal
+        modal.hide();
       } else {
-        console.log('No modal instance found, creating a new one');
         const newModal = new bootstrap.Modal(modalElement);
         newModal.hide();
       }
@@ -131,5 +156,4 @@ export class ItemListComponent implements OnInit {
       console.error('Modal element not found:', modalId);
     }
   }
-
 }
