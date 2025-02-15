@@ -29,8 +29,8 @@ export class ApiService {
   }
 
   // Update an item
-  updateItem(id: number, item: Item): Observable<Item> {
-    return this.http.put<Item>(`${this.apiUrl}/${id}`, item).pipe(
+  updateItem(item: Item): Observable<Item> {
+    return this.http.put<Item>(`${this.apiUrl}/${item.id}`, item).pipe(
       catchError(this.handleError)
     );
   }

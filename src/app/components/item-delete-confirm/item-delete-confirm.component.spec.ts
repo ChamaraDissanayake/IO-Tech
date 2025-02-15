@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ItemFormComponent } from './item-form.component';
+import { ItemDeleteConfirmComponent } from './item-delete-confirm.component';
 
-describe('ItemFormComponent', () => {
-  let component: ItemFormComponent;
-  let fixture: ComponentFixture<ItemFormComponent>;
+describe('ItemDeleteConfirmComponent', () => {
+  let component: ItemDeleteConfirmComponent;
+  let fixture: ComponentFixture<ItemDeleteConfirmComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ItemFormComponent ]
+      declarations: [ ItemDeleteConfirmComponent ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ItemFormComponent);
+    fixture = TestBed.createComponent(ItemDeleteConfirmComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

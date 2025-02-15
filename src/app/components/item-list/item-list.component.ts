@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from 'src/app/core/services/api.service';
 import { Item } from 'src/app/shared/models/item';
+import * as bootstrap from 'bootstrap';
+import { ItemView } from 'src/app/shared/utils/enums/ItemView';
 
 @Component({
   selector: 'app-item-list',
@@ -8,14 +10,18 @@ import { Item } from 'src/app/shared/models/item';
   styleUrls: ['./item-list.component.css']
 })
 export class ItemListComponent implements OnInit {
-
-  title = 'IO-Tech';
   items: Item[] = [];
   currentPage: number = 1;
+  viewMode: ItemView = ItemView.Add;
+  selectedItem: Item = { id: 0, title: '', body: '' };
+
   constructor(private apiService: ApiService) {}
 
   ngOnInit(): void {
-    // Using an observer object
+    this.fetchItems();
+  }
+
+  fetchItems(): void {
     this.apiService.getItems().subscribe({
       next: (data: Item[]) => {
         this.items = data;
@@ -23,76 +29,116 @@ export class ItemListComponent implements OnInit {
       error: (error) => {
         console.error('Error fetching items:', error);
       },
-      complete: () => {
-        console.log('Fetch items request complete.');
-      }
     });
   }
 
-  deleteItem(item: Item): void {
-    // this.apiService.deleteItem(id).subscribe({
-    //   next: (data: item) => {
-    //     console.log('Item deleted:', data);
-    //     // Update items array after deleting the item
-    //     this.items = this.items.filter((item) => item.id !== id);
-    //   },
-    //   error: (error) => {
-    //     console.error('Error deleting item:', error);
-    //   },
-    //   complete: () => {
-    //     console.log('Delete item request complete.');
-    //   }
-    // });
+  addItem(): void {
+    this.viewMode = ItemView.Add;
+    this.selectedItem = { id: 0, title: '', body: '' };
+    this.displayModal('itemUpsertModal');
   }
 
   viewItem(item: Item): void {
-    console.log(this.items);
-  }
-
-  addItem(): void {
-    // const newItem: item = {
-    //   id: 0,
-    //   name: 'New Item',
-    //   description: 'This is a new item.',
-    //   price: 0
-    // };
-
-    // this.apiService.addItem(newItem).subscribe({
-    //   next: (data: item) => {
-    //     console.log('Item added:', data);
-    //     // Update items array after adding the item
-    //     this.items.push(data);
-    //   },
-    //   error: (error) => {
-    //     console.error('Error adding item:', error);
-    //   },
-    //   complete: () => {
-    //     console.log('Add item request complete.');
-    //   }
-    // });
+    this.viewMode = ItemView.View;
+    this.selectedItem = { ...item };
+    this.displayModal('itemUpsertModal');
   }
 
   editItem(item: Item): void {
-    // const updatedItem: item = {
-    //   id: item.id,
-    //   name: 'Updated Item',
-    //   description: 'This item has been updated.',
-    //   price: 0
-    // };
-
-    // this.apiService.updateItem(item.id, updatedItem).subscribe({
-    //   next: (data: item) => {
-    //     console.log('Item updated:', data);
-    //     // Update items array after updating the item
-    //     this.items = this.items.map((item) => item.id === data.id ? data : item);
-    //   },
-    //   error: (error) => {
-    //     console.error('Error updating item:', error);
-    //   },
-    //   complete: () => {
-    //     console.log('Update item request complete.');
-    //   }
-    // });
-
+    this.viewMode = ItemView.Edit;
+    this.selectedItem = { ...item };
+    this.displayModal('itemUpsertModal');
   }
+
+  deleteConfirm(item: Item): void {
+    this.selectedItem = item;
+    this.displayModal('deleteConfirmationModal');
+  }
+
+  confirmDelete(): void {
+    this.apiService.deleteItem(this.selectedItem.id).subscribe({
+      next: () => {
+        this.items = this.items.filter((item) => item.id !== this.selectedItem.id);
+        this.selectedItem = { id: 0, title: '', body: '' };
+        console.log('Item deleted successfully');
+        this.hideModal('deleteConfirmationModal');
+      },
+      error: (error) => {
+        console.error('Error deleting item:', error);
+      },
+    });
+  }
+
+  saveItem(item: { id: number; title: string; body: string }): void {
+    if (this.viewMode === ItemView.Add) {
+      this.apiService.addItem(item).subscribe({
+        next: (newItem: Item) => {
+          this.items.push(newItem);
+          console.log('Item added successfully');
+          this.hideModal('itemUpsertModal');
+        },
+        error: (error) => {
+          console.error('Error adding item:', error);
+        },
+      });
+    } else if (this.viewMode === ItemView.Edit) {
+      const updatedItem = { ...this.selectedItem, ...item };
+      this.apiService.updateItem(updatedItem).subscribe({
+        next: () => {
+          const index = this.items.findIndex((i) => i.id === updatedItem.id);
+          if (index !== -1) this.items[index] = updatedItem;
+          console.log('Item updated successfully');
+          this.hideModal('itemUpsertModal');
+        },
+        error: (error) => {
+          console.error('Error updating item:', error);
+        },
+      });
+    }
+  }
+
+  cancel(modalId: string): void {
+    this.selectedItem = { id: 0, title: '', body: '' };
+    this.hideModal(modalId);
+  }
+
+  private displayModal(modalId: string): void {
+    const modalElement = document.getElementById(modalId);
+    if (modalElement) {
+      const modal = new bootstrap.Modal(modalElement);
+      modal.show();
+    } else {
+      console.error('Modal element not found:', modalId);
+    }
+  }
+
+  // private hideModal(modalId: string): void {
+  //   const modalElement = document.getElementById(modalId);
+  //   if (modalElement) {
+  //     const modal = new bootstrap.Modal(modalElement);
+  //     console.log('Hide modal', modal);
+
+  //     modal.hide(); // This should close the modal directly
+  //   } else {
+  //     console.error('Modal element not found:', modalId);
+  //   }
+  // }
+
+    private hideModal(modalId: string): void {
+      const modalElement = document.getElementById(modalId);
+      if (modalElement) {
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        if (modal) {
+          console.log('Existing modal instance:', modal);
+          modal.hide();  // Hide the modal
+        } else {
+          console.log('No modal instance found, creating a new one');
+          const newModal = new bootstrap.Modal(modalElement);
+          newModal.hide();
+        }
+      } else {
+        console.error('Modal element not found:', modalId);
+      }
+    }
+
 }

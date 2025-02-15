@@ -1,0 +1,55 @@
+<div class="modal fade" id="itemUpsertModal" tabindex="-1" aria-labelledby="itemUpsertModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="itemUpsertModalLabel">
+          {{ viewMode === itemView.Add ? 'Add' : (viewMode === itemView.Edit ? 'Edit' : 'View') }} Item
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+          (click)="onCancel.emit()"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="itemForm" (ngSubmit)="onSubmit()">
+          <div class="mb-3">
+            <label for="title" class="form-label">Title</label>
+            <input
+              type="text"
+              class="form-control"
+              id="title"
+              formControlName="title"
+              [readonly]="viewMode === itemView.View"
+              placeholder="Enter title"
+            />
+            <div class="text-danger" *ngIf="itemForm.get('title')?.invalid && itemForm.get('title')?.touched">
+              * Title is required and must be less than 100 characters.
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea
+              class="form-control"
+              id="description"
+              formControlName="body"
+              [readonly]="viewMode === itemView.View"
+              rows="3"
+              placeholder="Enter description"
+            ></textarea>
+            <div class="text-danger" *ngIf="itemForm.get('body')?.invalid && itemForm.get('body')?.touched">
+              * Description is required and must be less than 500 characters.
+            </div>
+          </div>
+          <div class="text-center" *ngIf="viewMode !== itemView.View">
+            <button type="submit" class="btn btn-primary" [disabled]="itemForm.invalid">
+              {{ viewMode === itemView.Add ? 'Save' : 'Update' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

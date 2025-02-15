@@ -7,17 +7,19 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { HeaderComponent } from './components/header/header.component';
 import { ItemListComponent } from './components/item-list/item-list.component';
-import { ItemFormComponent } from './components/item-form/item-form.component';
 import { CapitalizePipe } from './shared/pipes/capitalize.pipe';
 import { NgxPaginationModule } from 'ngx-pagination';
+import { ItemDeleteConfirmComponent } from './components/item-delete-confirm/item-delete-confirm.component';
+import { ItemUpsertComponent } from './components/item-upsert/item-upsert.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     HeaderComponent,
     ItemListComponent,
-    ItemFormComponent,
-    CapitalizePipe
+    CapitalizePipe,
+    ItemDeleteConfirmComponent,
+    ItemUpsertComponent
   ],
   imports: [
     BrowserModule,
